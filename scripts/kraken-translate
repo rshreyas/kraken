@@ -96,7 +96,7 @@ sub get_taxonomy_str {
         unshift @nodes, lc($rank_code) . "__" . $name if $rank_code ne "-";
       }
       else {
-        unshift @nodes, $name_map{$taxid};
+        unshift @nodes, $parent_map{$taxid};
       }
       $taxid = $parent_map{$taxid};
     }
