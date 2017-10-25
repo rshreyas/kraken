@@ -88,6 +88,7 @@ sub get_taxonomy_str {
   my $taxid = shift;
   if (! exists $known_taxonomy_strings{$taxid}) {
     my @nodes;
+    unshift @nodes, rank_code($rank_map{$taxid});
     while ($taxid > 0) {
       if ($mpa_format) {
         my $rank_code = rank_code($rank_map{$taxid});
