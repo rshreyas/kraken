@@ -36,10 +36,11 @@ Note: Users concerned about the disk or memory requirements should
 read the paragraph about MiniKraken, below.
 
 * **Disk space**: Construction of Kraken's standard database will require at
-    least 160 GB of disk space. Customized databases may require
+    least 500 GB of disk space. Customized databases may require
     more or less space.  Disk space used is linearly proportional
-    to the number of distinct $k$-mers; as of Feb. 2015, Kraken's
-    default database contains just under 6 billion (6e9) distinct $k$-mers.
+    to the number of distinct $k$-mers; as of Oct. 2017, Kraken's
+    default database contains just over 14.4 billion (1.44e10)
+    distinct $k$-mers.
 
     In addition, the disk used to store the database should be
     locally-attached storage. Storing the database on a network
@@ -51,8 +52,8 @@ read the paragraph about MiniKraken, below.
 * **Memory**: To run efficiently, Kraken requires enough free memory to
     hold the database in RAM. While this can be accomplished using a
     ramdisk, Kraken supplies a utility for loading the database into
-    RAM via the OS cache. The default database size is 75 GB (as of
-    Feb. 2015), and so you will need at least that much RAM if you want
+    RAM via the OS cache. The default database size is 170 GB (as of
+    Oct. 2017), and so you will need at least that much RAM if you want
     to build or run with the default database.
 
 * **Dependencies**: Kraken currently makes extensive use of Linux utilities
@@ -152,7 +153,7 @@ To create the standard Kraken database, you can use the following command:
     kraken-build --standard --db $DBNAME
 
 (Replace "`$DBNAME`" above with your preferred database name/location.
-Please note that the database will use approximately 160 GB of
+Please note that the database will use approximately 500 GB of
 disk space during creation.)
 
 This will download NCBI taxonomic information, as well as the
@@ -162,20 +163,24 @@ process begins; this is the most time-consuming step.  If you
 have multiple processing cores, you can run this process with
 multiple threads, e.g.:
 
-    kraken-build --standard --threads 16 --db $DBNAME
+    kraken-build --standard --threads 24 --db $DBNAME
 
-Using 16 threads on a computer with 122 GB of RAM, the build
-process took approximately an hour and a half (steps with an asterisk
-have some multi-threading enabled) in February 2015:
+Using 24 threads on a computer (an AWS r4.8xlarge instance)
+with 244 GB of RAM, the build process took approximately 5 hours
+(steps with an asterisk have some multi-threading enabled) in 
+October 2017:
+ 
+     24m50s  *Step 1 (create set)
+        n/a   Step 2 (reduce database, optional and skipped)
+    154m53s  *Step 3 (sort set)
+        n/a   Step 4 (GI number to sequence ID map - now obsolete)
+        <1s   Step 5 (Sequence ID to taxon map)
+    127m28s  *Step 6 (set LCA values)
+    -------
+    5h7m11s   Total build time
 
-     7m48s  *Step 1 (create set)
-       n/a   Step 2 (reduce database, optional and skipped)
-    53m16s  *Step 3 (sort set)
-     1m04s   Step 4 (GI number to sequence ID map - now obsolete)
-     0m27s   Step 5 (Sequence ID to taxon map)
-    29m20s  *Step 6 (set LCA values)
-    ------
-    91m55s   Total build time
+This process used the automatically estimated jellyfish hash size
+of 20170976000.
 
 Note that if any step (including the initial downloads) fails,
 the build process will abort.  However, `kraken-build` will
@@ -725,7 +730,7 @@ minimizers with a predefined constant to toggle half of each minimizer's
 bits before sorting.  The more evenly distributed bins provide better
 caching performance, but databases created in this way are not compatible
 with earlier versions of Kraken.  Kraken versions from v0.10.0-beta up to
-(but not including) v1.0 will support the use of the older databases, but
+(and including) v1.0 will support the use of the older databases, but
 we nonetheless recommend one of the two following options:
 
 1) Build a new database.  This is the preferred option, as a newly-created
